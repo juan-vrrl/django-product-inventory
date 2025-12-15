@@ -1,0 +1,2 @@
+# django-product-inventory
+
