@@ -71,16 +71,28 @@ indexes = [
 
 ```bash
 # Install dependencies
-pip install django==5.1.4 djangorestframework==3.15.2 psycopg2-binary==2.9.10
+pip install django==5.1.4 djangorestframework==3.15.2 psycopg2-binary==2.9.10 python-dotenv==1.0.1
 
 # Create database
 createdb products_db
 
-# Update config/settings.py with your database credentials
+# Create .env file in project root
+# Copy from .env.example and update with your credentials
+cp .env.example .env
+
+# Edit .env file with your database password:
+# DB_PASSWORD=your_actual_password
 
 # Run migrations
 python manage.py migrate
 
+# Create superuser (optional, for admin access)
+python manage.py createsuperuser
+
 # Start server
 python manage.py runserver
 ```
+
+**Access:**
+- API: http://localhost:8000/api/products/
+- Admin: http://localhost:8000/admin/ (requires superuser)
