@@ -21,9 +21,46 @@ class ProductListCreateView(APIView):
         price_lte = request.query_params.get("price_lte")  # less than or equal
 
         if price_gte:
-            products = products.filter(fields__price__gte=float(price_gte))
+            try:
+                price_gte_val = float(price_gte)
+                if price_gte_val < 0:
+                    return Response(
+                        {
+                            "status": 400,
+                            "message": "price_gte must be a non-negative number",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                products = products.filter(fields__price__gte=price_gte_val)
+            except ValueError:
+                return Response(
+                    {
+                        "status": 400,
+                        "message": "price_gte must be a valid number",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        
         if price_lte:
-            products = products.filter(fields__price__lte=float(price_lte))
+            try:
+                price_lte_val = float(price_lte)
+                if price_lte_val < 0:
+                    return Response(
+                        {
+                            "status": 400,
+                            "message": "price_lte must be a non-negative number",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                products = products.filter(fields__price__lte=price_lte_val)
+            except ValueError:
+                return Response(
+                    {
+                        "status": 400,
+                        "message": "price_lte must be a valid number",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         # Order by price (supports 'asc' for ascending or 'desc' for descending)
         order = request.query_params.get("order")
@@ -33,9 +70,44 @@ class ProductListCreateView(APIView):
             elif order == "desc":
                 products = products.order_by("-fields__price")
 
-        # Pagination
-        page = int(request.query_params.get("page", 1))
-        limit = int(request.query_params.get("limit", 10))
+        # Pagination with validation
+        try:
+            page = int(request.query_params.get("page", 1))
+            if page < 1:
+                return Response(
+                    {
+                        "status": 400,
+                        "message": "page must be a positive number",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except (ValueError, TypeError):
+            return Response(
+                {
+                    "status": 400,
+                    "message": "page must be a valid number",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            limit = int(request.query_params.get("limit", 10))
+            if limit < 1:
+                return Response(
+                    {
+                        "status": 400,
+                        "message": "limit must be a positive number",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except (ValueError, TypeError):
+            return Response(
+                {
+                    "status": 400,
+                    "message": "limit must be a valid number",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Calculate offset
         offset = (page - 1) * limit
