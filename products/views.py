@@ -24,12 +24,12 @@ class ProductListCreateView(APIView):
         if price_lte:
             products = products.filter(fields__price__lte=float(price_lte))
         
-        # Sorting by price only (supports 'price' or '-price')
-        sort_by = request.query_params.get('sort_by')
-        if sort_by:
-            if sort_by == 'price':
+        # Order by price (supports 'asc' for ascending or 'desc' for descending)
+        order = request.query_params.get('order')
+        if order:
+            if order == 'asc':
                 products = products.order_by('fields__price')
-            elif sort_by == '-price':
+            elif order == 'desc':
                 products = products.order_by('-fields__price')
         
         serializer = ProductSerializer(products, many=True)
