@@ -9,6 +9,29 @@ class ProductListCreateView(APIView):
     # Get all products
     def get(self, request):
         products = Product.objects.all()
+        
+        # Filter by name (exact match or partial)
+        name = request.query_params.get('name')
+        if name:
+            products = products.filter(fields__name__icontains=name)
+        
+        # Filter by price range
+        price_gte = request.query_params.get('price_gte')  # greater than or equal
+        price_lte = request.query_params.get('price_lte')  # less than or equal
+        
+        if price_gte:
+            products = products.filter(fields__price__gte=float(price_gte))
+        if price_lte:
+            products = products.filter(fields__price__lte=float(price_lte))
+        
+        # Sorting by price only (supports 'price' or '-price')
+        sort_by = request.query_params.get('sort_by')
+        if sort_by:
+            if sort_by == 'price':
+                products = products.order_by('fields__price')
+            elif sort_by == '-price':
+                products = products.order_by('-fields__price')
+        
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
     
